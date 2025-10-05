@@ -1,33 +1,22 @@
 package model;
 
-import java.util.Date;
 
-public class pedido {
+public class Pedido {
     public Integer id;
-    public Date data;
+    public String data;
     public Double valor;
     public String descricao;
 
-    public pedido(Integer id , Date data, Double valor, String descricao){
-        this.id = id;
-        this.data = data;
-        this.valor = valor;
-        this.descricao = descricao;
-    }
-
-
-    public void setId(Integer id) {
+    public Pedido(Integer id){
         this.id = id;
     }
 
-    public Integer getId() {
-        return id;
-    }
 
-    public Date getData() {
+    public String getData() {
         return data;
     }
-    public Date setData(Date data){
+
+    public String setData(String data){
         this.data = data;
         return data;
     }
