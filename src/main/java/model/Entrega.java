@@ -2,20 +2,21 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Entrega {
-    private Integer id;
+    private String id; //id gerado via uuid
     private String data;
     private String localizacao;
     private Entregador entregador; // relação: uma entrega pertence a um entregador
     private List<Pedido> pedidos;  // relação: uma entrega tem vários pedidos
 
     public Entrega(Integer id) {
-        this.id = id;
+        this.id = UUID.randomUUID().toString().substring(0, 4);
         this.pedidos = new ArrayList<>();
     }
 
-    public Integer getId() { return id; }
+    public String getId() { return id; }
 
     public String getData() { return data; }
     public void setData(String data) { this.data = data; }
