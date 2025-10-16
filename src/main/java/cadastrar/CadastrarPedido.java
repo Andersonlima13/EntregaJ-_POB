@@ -1,4 +1,5 @@
 package cadastrar;
+
 import banco.Util;
 import model.Pedido;
 import com.db4o.ObjectContainer;
@@ -6,25 +7,31 @@ import com.db4o.ObjectContainer;
 public class CadastrarPedido {
     private ObjectContainer manager;
 
-    public CadastrarPedido(){
+    public CadastrarPedido() {
         manager = Util.conectarBanco();
 
-        System.out.println("Cadastrando pedido");
-        Pedido pedido;
+        try {
+            System.out.println("Cadastrando pedido...");
 
-        pedido = new Pedido(1);
-        pedido.setData("18/05/2025");
-        pedido.setValor(20.00);
-        pedido.setDescricao("Pedido realizado");
+            Pedido pedido = new Pedido();
+            pedido.setData("17/05/2025");
+            pedido.setValor(20.00);
+            pedido.setDescricao("Pedido fulanooo");
 
-        manager.store(pedido);
-        manager.commit();
+            manager.store(pedido);
+            manager.commit();
 
-        System.out.println("Pedido cadastrado");
-        Util.desconectar();
-        System.out.println("End");
+            System.out.println("✅ Pedido cadastrado com sucesso!");
+
+        } catch (Exception e) {
+            System.err.println("Erro ao cadastrar pedido: " + e.getMessage());
+        } finally {
+            Util.desconectar();
+            System.out.println("Conexão encerrada.");
+        }
     }
 
-    public static void main(String[] args) {new CadastrarPedido();}
-
+    public static void main(String[] args) {
+        new CadastrarPedido();
+    }
 }

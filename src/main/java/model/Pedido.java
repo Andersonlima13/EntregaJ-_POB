@@ -1,44 +1,64 @@
 package model;
 
+import java.util.UUID;
 
 public class Pedido {
-    public Integer id;
-    public String data;
-    public Double valor;
-    public String descricao;
+    private String id; //id gerado via uuid
+    private String data;
+    private Double valor;
+    private String descricao;
+    private Entrega entrega; // relação: cada pedido pertence a uma entrega
 
-    public Pedido(Integer id){
-        this.id = id;
+    // Construtor padrão (gera UUID automaticamente)
+    public Pedido() {
+        this.id = UUID.randomUUID().toString().substring(0, 4);
     }
 
+    // Getter e Setter
+    public String getId() {
+        return id;
+    }
 
     public String getData() {
         return data;
     }
 
-    public String setData(String data){
+    public void setData(String data) {
         this.data = data;
-        return data;
-    }
-
-    public void setValor(Double valor) {
-        this.valor = valor;
     }
 
     public Double getValor() {
         return valor;
     }
 
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
+    public void setValor(Double valor) {
+        this.valor = valor;
     }
 
     public String getDescricao() {
         return descricao;
     }
 
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
 
+    public Entrega getEntrega() {
+        return entrega;
+    }
+
+    public void setEntrega(Entrega entrega) {
+        this.entrega = entrega;
+    }
+
+    // método para printar o pedido
+    @Override
+    public String toString() {
+        return "\nPedido {" +
+                "id='" + id + '\'' +
+                ", data='" + data + '\'' +
+                ", valor=" + valor +
+                ", descricao='" + descricao + '\'' +
+                '}';
+    }
 }
-
-
-
