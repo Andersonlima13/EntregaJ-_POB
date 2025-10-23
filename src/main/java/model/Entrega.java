@@ -29,8 +29,13 @@ public class Entrega {
     public void setLongitude(double longitude) { this.longitude = longitude; }
 
     public Entregador getEntregador() { return entregador; }
-    public void setEntregador(Entregador entregador) { this.entregador = entregador; }
 
+    public void setEntregador(Entregador entregador) {
+        if (entregador == null) {
+            throw new IllegalArgumentException("Uma entrega deve ter um entregador.");
+        }
+        this.entregador = entregador;
+    }
     public List<Pedido> getPedidos() { return pedidos; }
 
     public void adicionarPedido(Pedido p) {
