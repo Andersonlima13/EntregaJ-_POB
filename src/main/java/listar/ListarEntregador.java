@@ -35,10 +35,10 @@ public class ListarEntregador {
             List<Entrega> entregas = queryEntregas.execute();
 
             // Mapear entregadorId -> total de entregas
-            Map<String, Integer> totalPorEntregador = new HashMap<>();
+            Map<Integer, Integer> totalPorEntregador = new HashMap<>();
             for (Entrega e : entregas) {
                 if (e.getEntregador() != null) {
-                    String idEntregador = e.getEntregador().getId();
+                    int idEntregador = e.getEntregador().getId(); // int agora
                     totalPorEntregador.put(
                             idEntregador,
                             totalPorEntregador.getOrDefault(idEntregador, 0) + 1
@@ -54,6 +54,7 @@ public class ListarEntregador {
                 System.out.println("🆔 ID: " + ent.getId());
                 System.out.println("📦 Total de entregas: " + total);
             }
+
 
         } catch (Exception e) {
             System.err.println("🚨 Erro ao listar entregadores: " + e.getMessage());
