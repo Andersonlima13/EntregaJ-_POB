@@ -1,21 +1,19 @@
 package model;
 
-import java.util.UUID;
-
 public class Pedido {
-    private String id; //id gerado via uuid
+    private int id; // agora é int gerado automaticamente
     private String data;
     private Double valor;
     private String descricao;
-    private Entrega entrega; // relação: cada pedido pertence a uma entrega
+    private Entrega entrega; // cada pedido pertence a uma entrega
 
-    // Construtor padrão (gera UUID automaticamente)
+    // Construtor padrão
     public Pedido() {
-        this.id = UUID.randomUUID().toString().substring(0, 4);
+        // id será gerado automaticamente pelo Util.java
     }
 
-    // Getter e Setter
-    public String getId() {
+    // Getters e Setters
+    public int getId() {
         return id;
     }
 
@@ -51,11 +49,10 @@ public class Pedido {
         this.entrega = entrega;
     }
 
-    // método para printar o pedido
     @Override
     public String toString() {
         return "\nPedido {" +
-                "id='" + id + '\'' +
+                "id=" + id +
                 ", data='" + data + '\'' +
                 ", valor=" + valor +
                 ", descricao='" + descricao + '\'' +
