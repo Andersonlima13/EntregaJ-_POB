@@ -48,6 +48,6 @@ public class AtualizarPedido {
 
     public static void main(String[] args) {
         //  atualizar o pedido com ID específico
-        new AtualizarPedido("uuid do pedido", "Pedido atualizado", 35.50);
+        new AtualizarPedido("c262", "Pedido atualizado", 35.50);
     }
 }
