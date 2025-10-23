@@ -1,25 +1,25 @@
 package model;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class Entregador {
-    private String id; // agora é String para armazenar UUID
+    private int id; // agora é int gerado automaticamente
     private String nome;
     private List<Entrega> listaDeEntrega;
 
     public Entregador(String nome) {
-        this.id = UUID.randomUUID().toString().substring(0, 4); // gera um ID curto e único
         this.nome = nome;
         this.listaDeEntrega = new ArrayList<>();
+        // id será gerado automaticamente pelo Util.java
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    // não precisamos mais de setId, mas pode manter se quiser
-    public void setId(String id) {
+    // Mantido caso necessário
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -42,7 +42,7 @@ public class Entregador {
     @Override
     public String toString() {
         return "\nEntregador {" +
-                "id='" + id + '\'' +
+                "id=" + id +
                 ", nome='" + nome + '\'' +
                 ", totalEntregas=" + listaDeEntrega.size() +
                 '}';
