@@ -28,14 +28,22 @@ public class Util {
         EmbeddedConfiguration config = Db4oEmbedded.newConfiguration();
         config.common().messageLevel(0);
 
-        // Configura classes e cascata
-        config.common().objectClass(Pedido.class).cascadeOnActivate(true).cascadeOnUpdate(true).cascadeOnDelete(true);
-        config.common().objectClass(Entrega.class).cascadeOnActivate(true).cascadeOnUpdate(true).cascadeOnDelete(true);
-        config.common().objectClass(Entregador.class).cascadeOnActivate(true).cascadeOnUpdate(true).cascadeOnDelete(true);
+        // Configurar classes e cascata (cada chamada separada)
+        config.common().objectClass(Pedido.class).cascadeOnActivate(true);
+        config.common().objectClass(Pedido.class).cascadeOnUpdate(true);
+        config.common().objectClass(Pedido.class).cascadeOnDelete(true);
+
+        config.common().objectClass(Entrega.class).cascadeOnActivate(true);
+        config.common().objectClass(Entrega.class).cascadeOnUpdate(true);
+        config.common().objectClass(Entrega.class).cascadeOnDelete(true);
+
+        config.common().objectClass(Entregador.class).cascadeOnActivate(true);
+        config.common().objectClass(Entregador.class).cascadeOnUpdate(true);
+        config.common().objectClass(Entregador.class).cascadeOnDelete(true);
 
         manager = Db4oEmbedded.openFile(config, "EntregaJa");
 
-        // Ativar controle de IDs
+        // Ativar controle de IDs automáticos
         ativarControleID(manager);
 
         return manager;
@@ -55,7 +63,7 @@ public class Util {
 
     // --------------------- Controle de IDs ---------------------
     private static void ativarControleID(ObjectContainer manager) {
-        // Banco auxiliar para sequencias
+        // Banco auxiliar para sequências
         sequencia = Db4oEmbedded.openFile(Db4oEmbedded.newConfiguration(), "sequencia.db4o");
         lerRegistrosID();
 
@@ -80,12 +88,12 @@ public class Util {
             }
         });
 
-        // Trigger após commit: salva sequencias
+        // Trigger após commit: salva sequências
         eventRegistry.created().addListener((event, args) -> {
             if (salvar) salvarRegistrosID();
         });
 
-        // Trigger antes de fechar
+        // Trigger antes de fechar banco
         eventRegistry.closing().addListener((event, args) -> {
             if (sequencia != null && !sequencia.ext().isClosed()) {
                 sequencia.close();
