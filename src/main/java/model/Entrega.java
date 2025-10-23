@@ -2,10 +2,9 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class Entrega {
-    private String id; // id gerado via UUID
+    private int id; // agora é int gerado automaticamente
     private String data;
     private double latitude;
     private double longitude;
@@ -13,12 +12,12 @@ public class Entrega {
     private List<Pedido> pedidos;  // uma entrega tem vários pedidos
 
     public Entrega() {
-        this.id = UUID.randomUUID().toString().substring(0, 4);
         this.pedidos = new ArrayList<>();
+        // id será gerado automaticamente pelo Util.java
     }
 
     // Getters e Setters
-    public String getId() { return id; }
+    public int getId() { return id; }
 
     public String getData() { return data; }
     public void setData(String data) { this.data = data; }
@@ -42,7 +41,7 @@ public class Entrega {
     @Override
     public String toString() {
         return "\nEntrega {" +
-                "id='" + id + '\'' +
+                "id=" + id +
                 ", data='" + data + '\'' +
                 ", latitude=" + latitude +
                 ", longitude=" + longitude +
