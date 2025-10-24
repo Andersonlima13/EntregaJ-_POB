@@ -17,7 +17,7 @@ public class ListarEntregador {
         manager = Util.conectarBanco();
 
         try {
-            System.out.println("📋 Listando entregadores...\n");
+            System.out.println("Listando entregadores...\n");
 
             // Buscar todos os entregadores
             Query queryEntregadores = manager.query();
@@ -25,7 +25,7 @@ public class ListarEntregador {
             List<Entregador> entregadores = queryEntregadores.execute();
 
             if (entregadores.isEmpty()) {
-                System.out.println("⚠️ Nenhum entregador encontrado.");
+                System.out.println("Nenhum entregador encontrado.");
                 return;
             }
 

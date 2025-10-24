@@ -10,13 +10,13 @@ import java.util.List;
 public class DeletarPedido {
     private ObjectContainer manager;
 
-    public DeletarPedido(String idParaDeletar) {
+    public DeletarPedido(int idParaDeletar) {
         manager = Util.conectarBanco();
 
         try {
             System.out.println("Buscando pedido para deletar...");
 
-            // 🔍 Busca o pedido pelo ID
+            // 🔍 Busca o pedido pelo ID (agora do tipo int)
             Query query = manager.query();
             query.constrain(Pedido.class);
             query.descend("id").constrain(idParaDeletar);
@@ -37,12 +37,11 @@ public class DeletarPedido {
             System.err.println("Erro ao deletar pedido: " + e.getMessage());
         } finally {
             Util.desconectar();
-            System.out.println("Conexão encerrada");
+            System.out.println("Conexão encerrada.");
         }
     }
 
     public static void main(String[] args) {
-        //  instancias para deletar o pedido com ID específico
-        new DeletarPedido("coloque_aqui_o_uuid_do_pedido");
+        new DeletarPedido(2);
     }
 }

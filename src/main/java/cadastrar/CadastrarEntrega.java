@@ -13,11 +13,13 @@ import java.util.List;
 public class CadastrarEntrega {
     private ObjectContainer manager;
 
-    public CadastrarEntrega(String data, double latitude, double longitude, String entregadorId, List<String> pedidosIds) {
+    public CadastrarEntrega(String data, double latitude, double longitude, int entregadorId, List<Integer> pedidosIds) {
         manager = Util.conectarBanco();
 
         try {
-            // Buscar entregador existente pelo ID
+            System.out.println("🚚 Cadastrando nova entrega...");
+
+            // 🔹 Buscar entregador existente pelo ID (int)
             Query queryEntregador = manager.query();
             queryEntregador.constrain(Entregador.class);
             queryEntregador.descend("id").constrain(entregadorId);
@@ -31,7 +33,7 @@ public class CadastrarEntrega {
 
             // 🔹 Buscar pedidos existentes
             List<Pedido> pedidosEncontrados = new ArrayList<>();
-            for (String pid : pedidosIds) {
+            for (int pid : pedidosIds) {
                 Query queryPedido = manager.query();
                 queryPedido.constrain(Pedido.class);
                 queryPedido.descend("id").constrain(pid);
@@ -44,7 +46,7 @@ public class CadastrarEntrega {
                 pedidosEncontrados.add(pedidos.get(0));
             }
 
-            //  Criar nova entrega
+            // 🔹 Criar nova entrega
             Entrega entrega = new Entrega();
             entrega.setData(data);
             entrega.setLatitude(latitude);
@@ -57,15 +59,15 @@ public class CadastrarEntrega {
                 manager.store(p); // Atualiza o pedido no DB
             }
 
-            //  Associar entrega ao entregador
+            // 🔹 Associar entrega ao entregador
             entregador.getListaDeEntrega().add(entrega);
 
-            //  Persistir tudo
+            // 🔹 Persistir tudo
             manager.store(entrega);
             manager.store(entregador);
             manager.commit();
 
-            System.out.println("Entrega cadastrada com sucesso!");
+            System.out.println("✅ Entrega cadastrada com sucesso!");
             System.out.println(entrega);
 
         } catch (Exception e) {
@@ -78,14 +80,14 @@ public class CadastrarEntrega {
 
     public static void main(String[] args) {
         /*
-         * Antes de rodar este main:
-         * -Certifique-se de que já existem:
-         *   Um entregador cadastrado no banco (use o ID dele)
-         *    Pedidos cadastrados no banco (use seus IDs)
+         * Antes de rodar:
+         * - Certifique-se de que já existam:
+         *   → Um entregador cadastrado (use o ID dele)
+         *   → Pedidos cadastrados (use seus IDs)
          */
 
-        String entregadorId = "f9eb"; // exemplo: ID do entregador existente
-        List<String> pedidosIds = List.of("7937"); // exemplo: IDs dos pedidos existentes
+        int entregadorId = 2; // exemplo: ID do entregador existente
+        List<Integer> pedidosIds = List.of(1); // exemplo: IDs dos pedidos existentes
 
         new CadastrarEntrega("2025-10-04", -7.1186, -34.8811, entregadorId, pedidosIds);
     }

@@ -10,10 +10,12 @@ import java.util.List;
 public class DeletarEntrega {
     private ObjectContainer manager;
 
-    public DeletarEntrega(String id) {
+    public DeletarEntrega(int id) {
         manager = Util.conectarBanco();
 
         try {
+            System.out.println("🗑️ Buscando entrega com ID: " + id);
+
             Query query = manager.query();
             query.constrain(Entrega.class);
             query.descend("id").constrain(id);
@@ -27,17 +29,20 @@ public class DeletarEntrega {
                 manager.delete(entrega);
                 manager.commit();
 
-                System.out.println("🗑️ Entrega removida com sucesso! ID: " + id);
+                System.out.println("✅ Entrega removida com sucesso! ID: " + id);
+                System.out.println("Entrega deletada: " + entrega);
             }
 
         } catch (Exception e) {
-            System.err.println("Erro ao deletar entrega: " + e.getMessage());
+            System.err.println("🚨 Erro ao deletar entrega: " + e.getMessage());
         } finally {
             Util.desconectar();
+            System.out.println("🔒 Conexão encerrada.");
         }
     }
 
     public static void main(String[] args) {
-        new DeletarEntrega("7764");
+        // Exemplo: deletar entrega de ID 7764
+        new DeletarEntrega(0);
     }
 }

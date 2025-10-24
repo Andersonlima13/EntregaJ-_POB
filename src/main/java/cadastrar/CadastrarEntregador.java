@@ -13,7 +13,7 @@ public class CadastrarEntregador {
         try {
             System.out.println("Cadastrando entregador...");
 
-            Entregador entregador = new Entregador("Maria Oliveira");
+            Entregador entregador = new Entregador("teste de id 2");
 
             manager.store(entregador);
             manager.commit();

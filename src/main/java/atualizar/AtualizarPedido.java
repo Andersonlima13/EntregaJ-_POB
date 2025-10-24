@@ -10,13 +10,13 @@ import java.util.List;
 public class AtualizarPedido {
     private ObjectContainer manager;
 
-    public AtualizarPedido(String idParaAtualizar, String novaDescricao, double novoValor) {
+    public AtualizarPedido(int idParaAtualizar, String novaDescricao, double novoValor) {
         manager = Util.conectarBanco();
 
         try {
             System.out.println("Buscando pedido para atualizar...");
 
-            // 🔍 Busca o pedido pelo ID
+            // Busca o pedido pelo ID
             Query query = manager.query();
             query.constrain(Pedido.class);
             query.descend("id").constrain(idParaAtualizar);
@@ -34,7 +34,7 @@ public class AtualizarPedido {
                 manager.store(pedido);
                 manager.commit();
 
-                System.out.println("✅ Pedido atualizado com sucesso!");
+                System.out.println("Pedido atualizado com sucesso!");
                 System.out.println(pedido);
             }
 
@@ -47,7 +47,6 @@ public class AtualizarPedido {
     }
 
     public static void main(String[] args) {
-        //  atualizar o pedido com ID específico
-        new AtualizarPedido("c262", "Pedido atualizado", 35.50);
+        new AtualizarPedido(2, "Pedido atualizado 2", 35.50);
     }
 }

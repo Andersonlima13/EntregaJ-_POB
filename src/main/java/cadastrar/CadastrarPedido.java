@@ -11,20 +11,17 @@ import java.util.List;
 public class CadastrarPedido {
     private ObjectContainer manager;
 
-    // ✅ Agora o construtor recebe opcionalmente o ID da entrega
     public CadastrarPedido(String entregaId) {
         manager = Util.conectarBanco();
 
         try {
             System.out.println("Cadastrando pedido...");
 
-            // Criar novo pedido com UUID automático
             Pedido pedido = new Pedido();
             pedido.setData("17/05/2025");
             pedido.setValor(20.00);
-            pedido.setDescricao("Pedido fulanooo");
+            pedido.setDescricao("Pedido 2 -testando id");
 
-            // 🔹 Se foi informado o ID de uma entrega, buscar e associar
             if (entregaId != null && !entregaId.isEmpty()) {
                 Query queryEntrega = manager.query();
                 queryEntrega.constrain(Entrega.class);
@@ -40,18 +37,18 @@ public class CadastrarPedido {
                 manager.store(entrega); // atualiza a entrega no banco
             }
 
-            // 🔹 Salvar o pedido no banco
+            //  Salvar o pedido no banco
             manager.store(pedido);
             manager.commit();
 
-            System.out.println("✅ Pedido cadastrado com sucesso!");
+            System.out.println("Pedido cadastrado com sucesso!");
             System.out.println(pedido);
 
         } catch (Exception e) {
-            System.err.println("🚨 Erro ao cadastrar pedido: " + e.getMessage());
+            System.err.println("Erro ao cadastrar pedido: " + e.getMessage());
         } finally {
             Util.desconectar();
-            System.out.println("🔒 Conexão encerrada.");
+            System.out.println("Conexão encerrada.");
         }
     }
 
@@ -60,7 +57,7 @@ public class CadastrarPedido {
         new CadastrarPedido(null);
 
         // Caso queira associar a uma entrega existente:
-        String entregaId = "e123";
+        // String entregaId = "e123";
         //new CadastrarPedido(entregaId);
     }
 }
