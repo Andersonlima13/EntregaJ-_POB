@@ -31,38 +31,45 @@ public class CadastrarEntrega {
 
             Entregador entregador = entregadores.get(0);
 
-            // 🔹 Buscar pedidos existentes
-            List<Pedido> pedidosEncontrados = new ArrayList<>();
-            for (int pid : pedidosIds) {
-                Query queryPedido = manager.query();
-                queryPedido.constrain(Pedido.class);
-                queryPedido.descend("id").constrain(pid);
-                List<Pedido> pedidos = queryPedido.execute();
-
-                if (pedidos.isEmpty()) {
-                    throw new Exception("Pedido com ID '" + pid + "' não encontrado!");
-                }
-
-                pedidosEncontrados.add(pedidos.get(0));
+            // Garantir que a lista do entregador esteja inicializada
+            if (entregador.getListaDeEntrega() == null) {
+                entregador.setListaDeEntrega(new ArrayList<>());
             }
 
-            // 🔹 Criar nova entrega
+            // 🔹 Buscar pedidos existentes (por id)
+            List<Pedido> pedidosEncontrados = new ArrayList<>();
+            if (pedidosIds != null) {
+                for (int pid : pedidosIds) {
+                    Query queryPedido = manager.query();
+                    queryPedido.constrain(Pedido.class);
+                    queryPedido.descend("id").constrain(pid);
+                    List<Pedido> pedidos = queryPedido.execute();
+
+                    if (pedidos.isEmpty()) {
+                        throw new Exception("Pedido com ID '" + pid + "' não encontrado!");
+                    }
+
+                    pedidosEncontrados.add(pedidos.get(0));
+                }
+            }
+
+            // 🔹 Criar nova entrega e associar ao entregador
             Entrega entrega = new Entrega();
             entrega.setData(data);
             entrega.setLatitude(latitude);
             entrega.setLongitude(longitude);
             entrega.setEntregador(entregador);
 
-            // Associar pedidos à entrega
+            // Associar pedidos à entrega (e persistir cada pedido atualizado)
             for (Pedido p : pedidosEncontrados) {
-                entrega.adicionarPedido(p);
-                manager.store(p); // Atualiza o pedido no DB
+                entrega.adicionarPedido(p); // também seta p.setEntrega(this)
+                manager.store(p);
             }
 
-            // 🔹 Associar entrega ao entregador
+            // 🔹 Associar entrega ao entregador (mantendo consistência)
             entregador.getListaDeEntrega().add(entrega);
 
-            // 🔹 Persistir tudo
+            // 🔹 Persistir tudo (entrega e entregador)
             manager.store(entrega);
             manager.store(entregador);
             manager.commit();
@@ -79,15 +86,9 @@ public class CadastrarEntrega {
     }
 
     public static void main(String[] args) {
-        /*
-         * Antes de rodar:
-         * - Certifique-se de que já existam:
-         *   → Um entregador cadastrado (use o ID dele)
-         *   → Pedidos cadastrados (use seus IDs)
-         */
-
-        int entregadorId = 2; // exemplo: ID do entregador existente
-        List<Integer> pedidosIds = List.of(1); // exemplo: IDs dos pedidos existentes
+        // Exemplo: informe um entregador e pedidos já existentes
+        int entregadorId = 3;
+        List<Integer> pedidosIds = List.of(3); // IDs reais dos pedidos
 
         new CadastrarEntrega("2025-10-04", -7.1186, -34.8811, entregadorId, pedidosIds);
     }

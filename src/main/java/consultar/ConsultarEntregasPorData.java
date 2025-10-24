@@ -37,6 +37,6 @@ public class ConsultarEntregasPorData {
     }
 
     public static void main(String[] args) {
-        new ConsultarEntregasPorData("17/05/2025");
+        new ConsultarEntregasPorData("2025-10-04");
     }
 }

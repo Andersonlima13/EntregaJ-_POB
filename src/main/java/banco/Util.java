@@ -28,6 +28,9 @@ public class Util {
         EmbeddedConfiguration config = Db4oEmbedded.newConfiguration();
         config.common().messageLevel(0);
 
+        config.common().activationDepth(Integer.MAX_VALUE);
+        config.common().updateDepth(Integer.MAX_VALUE);
+
         // Configurar classes e cascata (cada chamada separada)
         config.common().objectClass(Pedido.class).cascadeOnActivate(true);
         config.common().objectClass(Pedido.class).cascadeOnUpdate(true);

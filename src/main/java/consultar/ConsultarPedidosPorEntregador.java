@@ -41,6 +41,6 @@ public class ConsultarPedidosPorEntregador {
     }
 
     public static void main(String[] args) {
-        new ConsultarPedidosPorEntregador("Carlos");
+        new ConsultarPedidosPorEntregador("entregador 1");
     }
 }
