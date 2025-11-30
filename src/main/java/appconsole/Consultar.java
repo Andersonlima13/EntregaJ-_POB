@@ -1,5 +1,6 @@
 package appconsole;
 
+import requisito.Fachada;
 import com.db4o.ObjectContainer;
 import com.db4o.query.Query;
 import model.Entrega;
@@ -7,7 +8,6 @@ import model.Entregador;
 import model.Pedido;
 
 import java.util.List;
-
 
 public class Consultar {
     private ObjectContainer manager;
@@ -31,15 +31,15 @@ public class Consultar {
                 System.out.println("Nenhuma entrega encontrada na data: " + data);
             } else {
                 System.out.println("Total encontrado: " + entregas.size() + " entrega(s)\n");
-                
+
                 for (Entrega e : entregas) {
                     System.out.println("Entrega #" + e.getId());
                     System.out.println(" •  Data: " + e.getData());
                     System.out.println(" •  Localização: [" + e.getLatitude() + ", " + e.getLongitude() + "]");
-                    System.out.println(" •  Entregador: " + 
-                        (e.getEntregador() != null ? e.getEntregador().getNome() : "N/A"));
+                    System.out.println(" •  Entregador: " +
+                            (e.getEntregador() != null ? e.getEntregador().getNome() : "N/A"));
                     System.out.println(" •  Pedidos: " + e.getPedidos().size());
-                    
+
                     for (Pedido p : e.getPedidos()) {
                         System.out.println("      " + p.getDescricao() + " (R$ " + p.getValor() + ")");
                     }
@@ -71,7 +71,7 @@ public class Consultar {
 
                 for (Entrega e : entregas) {
                     System.out.println("Entrega #" + e.getId() + " (" + e.getData() + "):");
-                    
+
                     for (Pedido p : e.getPedidos()) {
                         totalPedidos++;
                         System.out.println("  • Pedido #" + p.getId() + " - " + p.getDescricao());
@@ -119,9 +119,9 @@ public class Consultar {
                     System.out.println("Entregas:");
 
                     for (Entrega e : ent.getListaDeEntrega()) {
-                        System.out.println("     • Entrega #" + e.getId() + 
-                            " em " + e.getData() + 
-                            " (" + e.getPedidos().size() + " pedido(s))");
+                        System.out.println("     • Entrega #" + e.getId() +
+                                " em " + e.getData() +
+                                " (" + e.getPedidos().size() + " pedido(s))");
                     }
                     System.out.println();
                 }
