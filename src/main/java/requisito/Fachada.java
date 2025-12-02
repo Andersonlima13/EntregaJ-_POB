@@ -15,9 +15,7 @@ public class Fachada {
     private static EntregaRepositorio entregaRep = new EntregaRepositorio();
     private static PedidoRepositorio pedidoRep = new PedidoRepositorio();
 
-    // ---------------------------------------------------------
     // ENTREGADOR
-    // ---------------------------------------------------------
     public static void criarEntregador(String nome) throws Exception {
         if (nome == null || nome.isEmpty())
             throw new Exception("Nome vazio");
@@ -45,9 +43,50 @@ public class Fachada {
         return entregadorRep.ler(nome);
     }
 
-    // ---------------------------------------------------------
+    public static void atualizarEntregador(int id, String novoNome) throws Exception {
+        if (novoNome == null || novoNome.isEmpty())
+            throw new Exception("Nome vazio");
+
+        entregadorRep.conectar();
+        Entregador e = entregadorRep.ler(id);
+        if (e == null) {
+            entregadorRep.desconectar();
+            throw new Exception("Entregador inexistente: " + id);
+        }
+
+        // verifica se já existe outro entregador com o mesmo nome
+        Entregador outro = entregadorRep.ler(novoNome);
+        if (outro != null && outro.getId() != id) {
+            entregadorRep.desconectar();
+            throw new Exception("Outro entregador já usa o nome: " + novoNome);
+        }
+
+        e.setNome(novoNome);
+        entregadorRep.atualizar(e);
+        entregadorRep.commit();
+        entregadorRep.desconectar();
+    }
+
+    //  apagar entregador (exige que não tenha entregas vinculadas)
+    public static void apagarEntregador(int id) throws Exception {
+        entregadorRep.conectar();
+        Entregador e = entregadorRep.ler(id);
+        if (e == null) {
+            entregadorRep.desconectar();
+            throw new Exception("Entregador inexistente: " + id);
+        }
+
+        if (e.getListaDeEntrega() != null && !e.getListaDeEntrega().isEmpty()) {
+            entregadorRep.desconectar();
+            throw new Exception("Entregador possui entregas vinculadas. Apague as entregas primeiro.");
+        }
+
+        entregadorRep.apagar(e);
+        entregadorRep.commit();
+        entregadorRep.desconectar();
+    }
+
     // PEDIDO
-    // ---------------------------------------------------------
     public static void criarPedido(Pedido p) throws Exception {
         if (p == null)
             throw new Exception("Pedido nulo");
@@ -75,9 +114,34 @@ public class Fachada {
         return pedidoRep.ler(id);
     }
 
-    // ---------------------------------------------------------
+    // Novo: apagar pedido (desvincula de entrega se necessário)
+    public static void apagarPedido(int id) throws Exception {
+        pedidoRep.conectar();
+        Pedido p = pedidoRep.ler(id);
+        pedidoRep.desconectar();
+
+        if (p == null)
+            throw new Exception("Pedido inexistente: " + id);
+
+        // se o pedido estiver vinculado a uma entrega, remova do relacionamento
+        if (p.getEntrega() != null) {
+            Entrega ent = p.getEntrega();
+            // remover da lista da entrega
+            ent.getPedidos().removeIf(x -> x.getId() == id);
+
+            entregaRep.conectar();
+            entregaRep.atualizar(ent);
+            entregaRep.commit();
+            entregaRep.desconectar();
+        }
+
+        pedidoRep.conectar();
+        pedidoRep.apagar(p);
+        pedidoRep.commit();
+        pedidoRep.desconectar();
+    }
+
     // ENTREGA
-    // ---------------------------------------------------------
     public static void criarEntrega(Entrega ent) throws Exception {
         if (ent == null)
             throw new Exception("Entrega nula");
