@@ -16,33 +16,31 @@ public class Consultar {
         manager = Util.conectarBanco();
     }
 
-    public void entregasNaData(String data) {
+
+     // CONSULTA 1: Quais os pedidos sem entrega
+
+    public void pedidosSemEntrega() {
         try {
-            System.out.println("\n=== CONSULTA 1: Entregas na data " + data + " ===");
+            System.out.println("\nCONSULTA 1: Pedidos sem entrega");
             System.out.println("─".repeat(60));
 
             Query query = manager.query();
-            query.constrain(Entrega.class);
-            query.descend("data").constrain(data);
+            query.constrain(Pedido.class);
+            query.descend("entrega").constrain(null);
 
-            List<Entrega> entregas = query.execute();
+            List<Pedido> pedidos = query.execute();
 
-            if (entregas.isEmpty()) {
-                System.out.println("Nenhuma entrega encontrada na data: " + data);
+            if (pedidos.isEmpty()) {
+                System.out.println("Todos os pedidos têm entrega associada.");
             } else {
-                System.out.println("Total encontrado: " + entregas.size() + " entrega(s)\n");
+                System.out.println("Total de pedidos sem entrega: " + pedidos.size() + "\n");
 
-                for (Entrega e : entregas) {
-                    System.out.println("Entrega #" + e.getId());
-                    System.out.println(" •  Data: " + e.getData());
-                    System.out.println(" •  Localização: [" + e.getLatitude() + ", " + e.getLongitude() + "]");
-                    System.out.println(" •  Entregador: " +
-                            (e.getEntregador() != null ? e.getEntregador().getNome() : "N/A"));
-                    System.out.println(" •  Pedidos: " + e.getPedidos().size());
-
-                    for (Pedido p : e.getPedidos()) {
-                        System.out.println("      " + p.getDescricao() + " (R$ " + p.getValor() + ")");
-                    }
+                for (Pedido p : pedidos) {
+                    System.out.println("Pedido #" + p.getId());
+                    System.out.println("   Data: " + p.getData());
+                    System.out.println("   Descrição: " + p.getDescricao());
+                    System.out.println("   Valor: R$ " + p.getValor());
+                    System.out.println("   Status: SEM ENTREGA");
                     System.out.println();
                 }
             }
@@ -52,9 +50,10 @@ public class Consultar {
         }
     }
 
+//CONSULTA 2: Quais os pedidos entregues pelo entregador de nome X
     public void pedidosPorEntregador(String nomeEntregador) {
         try {
-            System.out.println("\n=== CONSULTA 2: Pedidos entregues por " + nomeEntregador + " ===");
+            System.out.println("\nCONSULTA 2: Pedidos entregues por " + nomeEntregador);
             System.out.println("─".repeat(60));
 
             Query query = manager.query();
@@ -74,13 +73,13 @@ public class Consultar {
 
                     for (Pedido p : e.getPedidos()) {
                         totalPedidos++;
-                        System.out.println("  • Pedido #" + p.getId() + " - " + p.getDescricao());
+                        System.out.println("    Pedido #" + p.getId() + " - " + p.getDescricao());
                         System.out.println("    Data: " + p.getData() + " | Valor: R$ " + p.getValor());
                     }
                     System.out.println();
                 }
 
-                System.out.println("Total de pedidos entregues: " + totalPedidos);
+                System.out.println("Total de pedidos entregues por " + nomeEntregador + ": " + totalPedidos);
             }
 
         } catch (Exception e) {
@@ -88,9 +87,11 @@ public class Consultar {
         }
     }
 
+    
+     //CONSULTA 3: Quais os entregadores que têm mais de N entregas
     public void entregadoresComMaisDeNEntregas(int n) {
         try {
-            System.out.println("\n=== CONSULTA 3: Entregadores com mais de " + n + " entrega(s) ===");
+            System.out.println("\nCONSULTA 3: Entregadores com mais de " + n + " entrega(s)");
             System.out.println("─".repeat(60));
 
             Query query = manager.query();
@@ -115,8 +116,8 @@ public class Consultar {
                 if (qtdEntregas > n) {
                     encontrou = true;
                     System.out.println(ent.getNome() + " (ID: " + ent.getId() + ")");
-                    System.out.println("Total de entregas: " + qtdEntregas);
-                    System.out.println("Entregas:");
+                    System.out.println(" Total de entregas: " + qtdEntregas);
+                    System.out.println(" Detalhes das entregas:");
 
                     for (Entrega e : ent.getListaDeEntrega()) {
                         System.out.println("     • Entrega #" + e.getId() +
@@ -136,6 +137,7 @@ public class Consultar {
         }
     }
 
+    
     public void fechar() {
         Util.desconectar();
     }
@@ -144,16 +146,21 @@ public class Consultar {
         Consultar consultar = new Consultar();
 
         try {
-            // CONSULTA 1: Entregas na data específica
-            consultar.entregasNaData("2025-01-15");
+            // CONSULTA 1: Pedidos sem entrega
+            consultar.pedidosSemEntrega();
 
             // CONSULTA 2: Pedidos entregues por um entregador específico
             consultar.pedidosPorEntregador("João Silva");
 
-            // CONSULTA 3: Entregadores com mais de 1 entrega
-            consultar.entregadoresComMaisDeNEntregas(2);
+            // CONSULTA 3: Entregadores com mais de N entrega
+            consultar.entregadoresComMaisDeNEntregas(1);
 
-        } finally {
+            System.out.println("\n" + "=".repeat(60));
+            System.out.println(" Todas as consultas foram executadas!");
+            System.out.println("=".repeat(60));
+        } 
+        
+        finally {
             consultar.fechar();
             System.out.println("Conexão encerrada.");
         }
