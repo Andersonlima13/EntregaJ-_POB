@@ -29,7 +29,6 @@ public class TelaPrincipal {
     private JMenu mnEntrega;
     private JMenu mnConsulta;
 
-
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -47,12 +46,14 @@ public class TelaPrincipal {
     public TelaPrincipal() {
         initialize();
 
+        // Pre-cadastro se não houver dados
         List<Entregador> entregadores = Fachada.listarEntregadores();
         if (entregadores.isEmpty()) {
-            System.out.println("Cadastrando dados iniciais...");
+            System.out.println("📦 Cadastrando dados iniciais...");
             new appconsole.Cadastrar();
         }
     }
+
 
     private void initialize() {
         frame = new JFrame();
@@ -67,21 +68,24 @@ public class TelaPrincipal {
         ImagemLabel.setHorizontalAlignment(JLabel.CENTER);
         ImagemLabel.setBounds(0, 0, 500, 320);
 
+        // Carregar imagem logo.png
         try {
-            java.net.URL url = getClass().getResource("/imagens/logo.png");
-            BufferedImage img = null;
-            if (url != null) {
-                img = ImageIO.read(url);
+            java.io.File file = new java.io.File("src/main/java/imagens/logo.png");
+            
+            if (file.exists()) {
+                BufferedImage img = ImageIO.read(file);
+                
+                if (img != null) {
+                    Image scaled = getScaledImageProportional(img, 500, 320);
+                    ImagemLabel.setIcon(new ImageIcon(scaled));
+                    ImagemLabel.setText("");
+                }
+            } else {
+                System.out.println("Imagem não encontrada em: " + file.getAbsolutePath());
             }
             
-
-            Image scaled = getScaledImageProportional(img, 500, 320);
-            ImagemLabel.setIcon(new ImageIcon(scaled));
-            ImagemLabel.setText("");
-
         } catch (Exception ex) {
-            ex.printStackTrace();
-            System.out.println("Não foi possível carregar imagem: " + ex.getMessage());
+            System.err.println("Erro ao carregar imagem: " + ex.getMessage());
         }
 
         frame.getContentPane().add(ImagemLabel);
@@ -130,15 +134,18 @@ public class TelaPrincipal {
     private Image getScaledImageProportional(BufferedImage srcImg, int maxW, int maxH) {
         int w = srcImg.getWidth();
         int h = srcImg.getHeight();
+        
         double scale = Math.min((double) maxW / w, (double) maxH / h);
         int newW = (int) (w * scale);
         int newH = (int) (h * scale);
+        
         Image tmp = srcImg.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
         BufferedImage resized = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = resized.createGraphics();
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g2.drawImage(tmp, 0, 0, null);
         g2.dispose();
+        
         return resized;
     }
 }
