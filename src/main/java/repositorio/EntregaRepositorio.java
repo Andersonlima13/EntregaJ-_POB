@@ -2,30 +2,22 @@ package repositorio;
 
 import java.util.List;
 
-import com.db4o.ObjectContainer;
 import com.db4o.query.Query;
 
-import model.Entregador;
+import model.Entrega;
 
-public class EntregadorRepositorio extends CRUDRepositorio<Entregador> {
+public class EntregaRepositorio extends CRUDRepositorio<Entrega> {
 
     @Override
-    public Entregador ler(Object chave) {
+    public Entrega ler(Object chave) {
         conectar();
         try {
             if (chave instanceof Integer) {
                 int id = (Integer) chave;
                 Query q = manager.query();
-                q.constrain(Entregador.class);
+                q.constrain(Entrega.class);
                 q.descend("id").constrain(id);
-                List<Entregador> res = q.execute();
-                return res.isEmpty() ? null : res.get(0);
-            } else if (chave instanceof String) {
-                String nome = (String) chave;
-                Query q = manager.query();
-                q.constrain(Entregador.class);
-                q.descend("nome").constrain(nome);
-                List<Entregador> res = q.execute();
+                List<Entrega> res = q.execute();
                 return res.isEmpty() ? null : res.get(0);
             }
             return null;
@@ -34,12 +26,12 @@ public class EntregadorRepositorio extends CRUDRepositorio<Entregador> {
         }
     }
 
-    public List<Entregador> listarPorNome(String texto) {
+    public List<Entrega> listarPorEntregadorId(int entregadorId) {
         conectar();
         try {
             Query q = manager.query();
-            q.constrain(Entregador.class);
-            q.descend("nome").constrain(texto);
+            q.constrain(Entrega.class);
+            q.descend("entregador").descend("id").constrain(entregadorId);
             return q.execute();
         } finally {
             desconectar();
