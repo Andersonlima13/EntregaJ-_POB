@@ -2,29 +2,47 @@ package repositorio;
 
 import java.util.List;
 
+import com.db4o.ObjectContainer;
 import com.db4o.query.Query;
 
-import model.Entrega;
+import model.Entregador;
 
-public class EntregaRepositorio extends CRUDRepositorio<Entrega> {
+public class EntregadorRepositorio extends CRUDRepositorio<Entregador> {
 
     @Override
-    public Entrega ler(Object chave) {
-        if (chave instanceof Integer) {
-            int id = (Integer) chave;
-            Query q = manager.query();
-            q.constrain(Entrega.class);
-            q.descend("id").constrain(id);
-            List<Entrega> res = q.execute();
-            return res.isEmpty() ? null : res.get(0);
+    public Entregador ler(Object chave) {
+        conectar();
+        try {
+            if (chave instanceof Integer) {
+                int id = (Integer) chave;
+                Query q = manager.query();
+                q.constrain(Entregador.class);
+                q.descend("id").constrain(id);
+                List<Entregador> res = q.execute();
+                return res.isEmpty() ? null : res.get(0);
+            } else if (chave instanceof String) {
+                String nome = (String) chave;
+                Query q = manager.query();
+                q.constrain(Entregador.class);
+                q.descend("nome").constrain(nome);
+                List<Entregador> res = q.execute();
+                return res.isEmpty() ? null : res.get(0);
+            }
+            return null;
+        } finally {
+            desconectar();
         }
-        return null;
     }
 
-    public List<Entrega> listarPorEntregadorId(int entregadorId) {
-        Query q = manager.query();
-        q.constrain(Entrega.class);
-        q.descend("entregador").descend("id").constrain(entregadorId);
-        return q.execute();
+    public List<Entregador> listarPorNome(String texto) {
+        conectar();
+        try {
+            Query q = manager.query();
+            q.constrain(Entregador.class);
+            q.descend("nome").constrain(texto);
+            return q.execute();
+        } finally {
+            desconectar();
+        }
     }
 }
