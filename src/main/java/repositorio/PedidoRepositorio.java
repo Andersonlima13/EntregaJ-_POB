@@ -10,14 +10,19 @@ public class PedidoRepositorio extends CRUDRepositorio<Pedido> {
 
     @Override
     public Pedido ler(Object chave) {
-        if (chave instanceof Integer) {
-            int id = (Integer) chave;
-            Query q = manager.query();
-            q.constrain(Pedido.class);
-            q.descend("id").constrain(id);
-            List<Pedido> res = q.execute();
-            return res.isEmpty() ? null : res.get(0);
+        conectar();
+        try {
+            if (chave instanceof Integer) {
+                int id = (Integer) chave;
+                Query q = manager.query();
+                q.constrain(Pedido.class);
+                q.descend("id").constrain(id);
+                List<Pedido> res = q.execute();
+                return res.isEmpty() ? null : res.get(0);
+            }
+            return null;
+        } finally {
+            desconectar();
         }
-        return null;
     }
 }
