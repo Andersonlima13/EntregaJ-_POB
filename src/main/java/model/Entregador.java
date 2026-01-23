@@ -2,23 +2,37 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name="entregador20232370027")
 public class Entregador {
-    private int id; // agora é int gerado automaticamente
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+    
+    @Column(nullable = false, length = 100)
     private String nome;
-    private List<Entrega> listaDeEntrega;
+    
+    @Lob
+    @Column(name = "foto")
+    private byte[] foto;
+    
+    @OneToMany(mappedBy = "entregador", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Entrega> listaDeEntrega = new ArrayList<>();
+
+    public Entregador() {
+    }
 
     public Entregador(String nome) {
         this.nome = nome;
-        this.listaDeEntrega = new ArrayList<>();
-        // id será gerado automaticamente pelo Util.java
     }
 
     public int getId() {
         return id;
     }
 
-    // Mantido caso necessário
     public void setId(int id) {
         this.id = id;
     }
@@ -29,6 +43,14 @@ public class Entregador {
 
     public void setNome(String nome) {
         this.nome = nome;
+    }
+
+    public byte[] getFoto() {
+        return foto;
+    }
+
+    public void setFoto(byte[] foto) {
+        this.foto = foto;
     }
 
     public List<Entrega> getListaDeEntrega() {
@@ -45,6 +67,7 @@ public class Entregador {
                 "id=" + id +
                 ", nome='" + nome + '\'' +
                 ", totalEntregas=" + listaDeEntrega.size() +
+                ", temFoto=" + (foto != null && foto.length > 0) +
                 '}';
     }
 }

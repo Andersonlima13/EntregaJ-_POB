@@ -1,20 +1,39 @@
 package model;
 
-public class Pedido {
-    private int id; // agora é int gerado automaticamente
-    private String data;
-    private Double valor;
-    private String descricao;
-    private Entrega entrega; // cada pedido pertence a uma entrega
+import jakarta.persistence.*;
 
-    // Construtor padrão
+
+@Entity
+@Table(name="pedido20232370027")
+public class Pedido {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+    
+    @Column(length = 20)
+    private String data;
+    
+    @Column
+    private Double valor;
+    
+    @Column(length = 200)
+    private String descricao;
+    
+    @ManyToOne
+    @JoinColumn(name = "entrega_id")
+    private Entrega entrega;
+
+    // Construtores
     public Pedido() {
-        // id será gerado automaticamente pelo Util.java
     }
 
-    // Getters e Setters
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getData() {
@@ -56,6 +75,7 @@ public class Pedido {
                 ", data='" + data + '\'' +
                 ", valor=" + valor +
                 ", descricao='" + descricao + '\'' +
+                ", entrega=" + (entrega != null ? "#" + entrega.getId() : "sem entrega") +
                 '}';
     }
 }

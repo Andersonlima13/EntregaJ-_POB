@@ -1,48 +1,53 @@
 package repositorio;
 
-import java.util.List;
-
-import com.db4o.ObjectContainer;
-import com.db4o.query.Query;
-
 import model.Entregador;
+import util.Util;
+import jakarta.persistence.TypedQuery;
+import java.util.List;
 
 public class EntregadorRepositorio extends CRUDRepositorio<Entregador> {
 
     @Override
     public Entregador ler(Object chave) {
-        conectar();
-        try {
-            if (chave instanceof Integer) {
-                int id = (Integer) chave;
-                Query q = manager.query();
-                q.constrain(Entregador.class);
-                q.descend("id").constrain(id);
-                List<Entregador> res = q.execute();
-                return res.isEmpty() ? null : res.get(0);
-            } else if (chave instanceof String) {
-                String nome = (String) chave;
-                Query q = manager.query();
-                q.constrain(Entregador.class);
-                q.descend("nome").constrain(nome);
-                List<Entregador> res = q.execute();
-                return res.isEmpty() ? null : res.get(0);
-            }
-            return null;
-        } finally {
-            desconectar();
+        if (chave instanceof Integer) {
+            return Util.getManager().find(Entregador.class, (Integer) chave);
+        } else if (chave instanceof String) {
+            return buscarPorNome((String) chave);
         }
+        return null;
     }
 
-    public List<Entregador> listarPorNome(String texto) {
-        conectar();
-        try {
-            Query q = manager.query();
-            q.constrain(Entregador.class);
-            q.descend("nome").constrain(texto);
-            return q.execute();
-        } finally {
-            desconectar();
-        }
+    @Override
+    public List<Entregador> listar() {
+        String jpql = "SELECT e FROM Entregador e ORDER BY e.nome";
+        TypedQuery<Entregador> query = Util.getManager().createQuery(jpql, Entregador.class);
+        return query.getResultList();
     }
+
+    /**
+     * Busca entregador por nome 
+     */
+    public Entregador buscarPorNome(String nome) {
+        String jpql = "SELECT e FROM Entregador e WHERE e.nome = :nome";
+        TypedQuery<Entregador> query = Util.getManager().createQuery(jpql, Entregador.class);
+        query.setParameter("nome", nome);
+        
+        List<Entregador> resultados = query.getResultList();
+        return resultados.isEmpty() ? null : resultados.get(0);
+    }
+
+    /**
+     * CONSULTA 3: Entregadores com mais de N entregas 
+     */
+    public List<Entregador> buscarComMaisDeNEntregas(int n) {
+        String jpql = "SELECT e FROM Entregador e " +
+                      "WHERE SIZE(e.listaDeEntrega) > :n " +
+                      "ORDER BY SIZE(e.listaDeEntrega) DESC";
+        
+        TypedQuery<Entregador> query = Util.getManager().createQuery(jpql, Entregador.class);
+        query.setParameter("n", n);
+        
+        return query.getResultList();
+    }
+
 }

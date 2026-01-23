@@ -1,28 +1,34 @@
 package repositorio;
 
-import java.util.List;
-
-import com.db4o.query.Query;
-
 import model.Pedido;
+import util.Util;
+import jakarta.persistence.TypedQuery;
+import java.util.List;
 
 public class PedidoRepositorio extends CRUDRepositorio<Pedido> {
 
     @Override
     public Pedido ler(Object chave) {
-        conectar();
-        try {
-            if (chave instanceof Integer) {
-                int id = (Integer) chave;
-                Query q = manager.query();
-                q.constrain(Pedido.class);
-                q.descend("id").constrain(id);
-                List<Pedido> res = q.execute();
-                return res.isEmpty() ? null : res.get(0);
-            }
-            return null;
-        } finally {
-            desconectar();
+        if (chave instanceof Integer) {
+            return Util.getManager().find(Pedido.class, (Integer) chave);
         }
+        return null;
     }
+
+    @Override
+    public List<Pedido> listar() {
+        String jpql = "SELECT p FROM Pedido p ORDER BY p.id";
+        TypedQuery<Pedido> query = Util.getManager().createQuery(jpql, Pedido.class);
+        return query.getResultList();
+    }
+
+    /**
+     * CONSULTA 1: Pedidos SEM entrega 
+     */
+    public List<Pedido> buscarPedidosSemEntrega() {
+        String jpql = "SELECT p FROM Pedido p WHERE p.entrega IS NULL";
+        TypedQuery<Pedido> query = Util.getManager().createQuery(jpql, Pedido.class);
+        return query.getResultList();
+    }
+
 }

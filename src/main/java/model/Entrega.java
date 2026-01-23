@@ -2,45 +2,88 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.persistence.*;
 
+
+@Entity
+@Table(name="entrega20232370027")
 public class Entrega {
-    private int id; // agora é int gerado automaticamente
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+    
+    @Column(nullable = false, length = 20)
     private String data;
+    
+    @Column(nullable = false)
     private double latitude;
+    
+    @Column(nullable = false)
     private double longitude;
-    private Entregador entregador; // uma entrega pertence a um entregador
-    private List<Pedido> pedidos;  // uma entrega tem vários pedidos
+    
+    @ManyToOne
+    @JoinColumn(name = "entregador_id", nullable = false)
+    private Entregador entregador;
+    
+    @OneToMany(mappedBy = "entrega", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Pedido> pedidos = new ArrayList<>();
 
     public Entrega() {
-        this.pedidos = new ArrayList<>();
-        // id será gerado automaticamente pelo Util.java
     }
 
-    // Getters e Setters
-    public int getId() { return id; }
+    public int getId() {
+        return id;
+    }
 
-    public String getData() { return data; }
-    public void setData(String data) { this.data = data; }
+    public void setId(int id) {
+        this.id = id;
+    }
 
-    public double getLatitude() { return latitude; }
-    public void setLatitude(double latitude) { this.latitude = latitude; }
+    public String getData() {
+        return data;
+    }
 
-    public double getLongitude() { return longitude; }
-    public void setLongitude(double longitude) { this.longitude = longitude; }
+    public void setData(String data) {
+        this.data = data;
+    }
 
-    public Entregador getEntregador() { return entregador; }
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public Entregador getEntregador() {
+        return entregador;
+    }
 
     public void setEntregador(Entregador entregador) {
-        if (entregador == null) {
-            throw new IllegalArgumentException("Uma entrega deve ter um entregador.");
-        }
         this.entregador = entregador;
     }
-    public List<Pedido> getPedidos() { return pedidos; }
 
+    public List<Pedido> getPedidos() {
+        return pedidos;
+    }
+
+    public void setPedidos(List<Pedido> pedidos) {
+        this.pedidos = pedidos;
+    }
+
+    // Método auxiliar para adicionar pedido (mantém relação bidirecional)
     public void adicionarPedido(Pedido p) {
         pedidos.add(p);
-        p.setEntrega(this); // mantém a relação bidirecional
+        p.setEntrega(this);
     }
 
     @Override
