@@ -1,114 +1,75 @@
 package appconsole;
 
-import com.db4o.ObjectContainer;
-import com.db4o.query.Query;
+import jakarta.persistence.EntityManager;
 import model.Entrega;
 import model.Pedido;
 
-import java.util.List;
-
 public class Alterar {
-    private ObjectContainer manager;
+
+    private EntityManager manager;
 
     public Alterar(int idPedido) {
         manager = Util.conectarBanco();
 
         try {
-            System.out.println("=== REMOVENDO RELACIONAMENTO PEDIDO-ENTREGA ===\n");
-            System.out.println("Buscando pedido com ID: " + idPedido);
+            manager.getTransaction().begin();
 
-            // Buscar o pedido pelo ID
-            Query queryPedido = manager.query();
-            queryPedido.constrain(Pedido.class);
-            queryPedido.descend("id").constrain(idPedido);
-            List<Pedido> resultados = queryPedido.execute();
+            Pedido pedido = manager.find(Pedido.class, idPedido);
 
-            if (resultados.isEmpty()) {
-                System.out.println(" Pedido não encontrado.");
+            if (pedido == null) {
+                System.out.println("Pedido não encontrado.");
                 return;
             }
 
-            Pedido pedido = resultados.get(0);
-            Entrega entregaAnterior = pedido.getEntrega();
+            Entrega entrega = pedido.getEntrega();
 
-            if (entregaAnterior == null) {
-                System.out.println("Este pedido não possui entrega associada.");
-                System.out.println(pedido);
+            if (entrega == null) {
+                System.out.println("Pedido não possui entrega.");
                 return;
             }
 
-            System.out.println("\n Estado ANTES da remoção:");
-            System.out.println(" • Pedido: " + pedido);
-            System.out.println(" • Entrega associada: #" + entregaAnterior.getId() + 
-                             " (" + entregaAnterior.getData() + ")");
-            System.out.println(" • Entregador: " + entregaAnterior.getEntregador().getNome());
+            entrega.getPedidos().remove(pedido);
+            pedido.setEntrega(null);
 
-            // Remover o pedido da lista de pedidos da entrega
-            boolean removido = entregaAnterior.getPedidos().remove(pedido);
-            
-            if (removido) {
-                pedido.setEntrega(null);
+            manager.merge(entrega);
+            manager.merge(pedido);
 
-                manager.store(entregaAnterior);
-                manager.store(pedido);
-                manager.commit();
+            manager.getTransaction().commit();
 
-                System.out.println("\n Relacionamento removido com sucesso!");
-                System.out.println("\n Estado DEPOIS da remoção:");
-                System.out.println(" • Pedido: " + pedido);
-                System.out.println(" • Entrega #" + entregaAnterior.getId() + 
-                                 " agora tem " + entregaAnterior.getPedidos().size() + " pedido(s)");
-            } else {
-                System.out.println("O pedido não estava na lista da entrega.");
-            }
+            System.out.println("Relacionamento Pedido–Entrega removido com sucesso.");
 
         } catch (Exception e) {
-            System.err.println("Erro ao remover relacionamento: " + e.getMessage());
+            manager.getTransaction().rollback();
             e.printStackTrace();
         } finally {
             Util.desconectar();
-            System.out.println("\n Conexão encerrada.");
         }
     }
 
     public static void removerEntregadorDeEntrega(int idEntrega) {
-        ObjectContainer manager = Util.conectarBanco();
+        EntityManager manager = Util.conectarBanco();
 
         try {
-            System.out.println("=== REMOVENDO RELACIONAMENTO ENTREGADOR-ENTREGA ===\n");
-            System.out.println("Buscando entrega com ID: " + idEntrega);
+            manager.getTransaction().begin();
 
-            Query query = manager.query();
-            query.constrain(Entrega.class);
-            query.descend("id").constrain(idEntrega);
-            List<Entrega> resultados = query.execute();
+            Entrega entrega = manager.find(Entrega.class, idEntrega);
 
-            if (resultados.isEmpty()) {
-                System.out.println("Entrega não encontrada.");
+            if (entrega == null || entrega.getEntregador() == null) {
+                System.out.println("Entrega inválida.");
                 return;
             }
 
-            Entrega entrega = resultados.get(0);
-            
-            if (entrega.getEntregador() == null) {
-                System.out.println("Esta entrega não possui entregador associado.");
-                return;
-            }
-
-            System.out.println("\n Estado ANTES:");
-            System.out.println(" • Entrega: #" + entrega.getId());
-            System.out.println(" • Entregador: " + entrega.getEntregador().getNome());
-
-            // Remover da lista do entregador
             entrega.getEntregador().getListaDeEntrega().remove(entrega);
-            manager.store(entrega.getEntregador()); 
+            entrega.setEntregador(null);
 
-            manager.commit();
-            
-            System.out.println("\n Relacionamento removido!");
+            manager.merge(entrega);
+
+            manager.getTransaction().commit();
+            System.out.println("Entregador removido da entrega.");
 
         } catch (Exception e) {
-            System.err.println(" Erro: " + e.getMessage());
+            manager.getTransaction().rollback();
+            e.printStackTrace();
         } finally {
             Util.desconectar();
         }
@@ -116,6 +77,5 @@ public class Alterar {
 
     public static void main(String[] args) {
         new Alterar(2);
-        
     }
 }

@@ -1,7 +1,8 @@
-package appconsole;
+package util;
 
 import java.util.Properties;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
@@ -9,12 +10,9 @@ import jakarta.persistence.Persistence;
 public class Util {
 
     private static EntityManagerFactory factory;
-    private static EntityManager manager;
+    private static final Logger logger = LogManager.getLogger(Util.class);
 
-    /**
-     * Conecta ao banco via JPA/Hibernate
-     */
-    public static EntityManager conectarBanco() {
+    private static void initFactory() {
         if (factory == null) {
             try {
                 Properties dados = new Properties();
@@ -28,7 +26,7 @@ public class Util {
 
                 Properties props = new Properties();
 
-                if ("postgresql".equalsIgnoreCase(sgbd)) {
+                if (sgbd.equals("postgresql")) {
                     props.setProperty("jakarta.persistence.jdbc.driver", "org.postgresql.Driver");
                     props.setProperty("jakarta.persistence.jdbc.url",
                             "jdbc:postgresql://" + ip + ":5432/" + banco);
@@ -36,7 +34,7 @@ public class Util {
                     props.setProperty("jakarta.persistence.jdbc.password", senha);
                 }
 
-                if ("mysql".equalsIgnoreCase(sgbd)) {
+                if (sgbd.equals("mysql")) {
                     props.setProperty("jakarta.persistence.jdbc.driver", "com.mysql.cj.jdbc.Driver");
                     props.setProperty("jakarta.persistence.jdbc.url",
                             "jdbc:mysql://" + ip + ":3306/" + banco + "?createDatabaseIfNotExist=true");
@@ -47,40 +45,22 @@ public class Util {
                 String unitName = "hibernate-" + sgbd;
                 factory = Persistence.createEntityManagerFactory(unitName, props);
 
+                logger.info("EntityManagerFactory inicializada: " + unitName);
+
             } catch (Exception e) {
-                e.printStackTrace();
-                throw new RuntimeException("Erro ao conectar ao banco via JPA");
+                throw new RuntimeException("Erro ao inicializar JPA", e);
             }
         }
-
-        if (manager == null || !manager.isOpen()) {
-            manager = factory.createEntityManager();
-        }
-
-        return manager;
     }
 
-    /**
-     * Retorna o EntityManager ativo
-     */
-    public static EntityManager getManager() {
-        if (manager == null || !manager.isOpen()) {
-            conectarBanco();
-        }
-        return manager;
+    public static EntityManager getEntityManager() {
+        initFactory();
+        return factory.createEntityManager(); // 🔥 sempre NOVO
     }
 
-    /**
-     * Fecha EntityManager e Factory
-     */
-    public static void desconectar() {
-        if (manager != null && manager.isOpen()) {
-            manager.close();
-            manager = null;
-        }
+    public static void closeFactory() {
         if (factory != null && factory.isOpen()) {
             factory.close();
-            factory = null;
         }
     }
 }
