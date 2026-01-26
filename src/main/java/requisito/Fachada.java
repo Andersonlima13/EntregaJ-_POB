@@ -64,7 +64,6 @@ public class Fachada {
     
     
     
-
     public static Entregador localizarEntregadorPorNome(String nome) {
         EntityManager em = Util.getEntityManager();
         try {

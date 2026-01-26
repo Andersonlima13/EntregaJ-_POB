@@ -1,33 +1,34 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+
 import jakarta.persistence.*;
 
-
 @Entity
-@Table(name="entrega20232370027")
+@Table(name = "entrega20232370027")
 public class Entrega {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    
+
     @Column(nullable = false, length = 20)
     private String data;
-    
+
     @Column(nullable = false)
     private double latitude;
-    
+
     @Column(nullable = false)
     private double longitude;
-    
+
     @ManyToOne
     @JoinColumn(name = "entregador_id", nullable = false)
     private Entregador entregador;
-    
+
+    // 🔴 List -> 🟢 Set
     @OneToMany(mappedBy = "entrega", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Pedido> pedidos = new ArrayList<>();
+    private Set<Pedido> pedidos = new HashSet<>();
 
     public Entrega() {
     }
@@ -72,15 +73,15 @@ public class Entrega {
         this.entregador = entregador;
     }
 
-    public List<Pedido> getPedidos() {
+    public Set<Pedido> getPedidos() {
         return pedidos;
     }
 
-    public void setPedidos(List<Pedido> pedidos) {
+    public void setPedidos(Set<Pedido> pedidos) {
         this.pedidos = pedidos;
     }
 
-    // Método auxiliar para adicionar pedido (mantém relação bidirecional)
+    // Mantém relação bidirecional
     public void adicionarPedido(Pedido p) {
         pedidos.add(p);
         p.setEntrega(this);

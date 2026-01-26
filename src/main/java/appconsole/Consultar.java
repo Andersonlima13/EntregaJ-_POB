@@ -81,7 +81,8 @@ public class Consultar {
 
         TypedQuery<Entregador> query =
                 manager.createQuery(
-                        "SELECT e FROM Entregador e " +
+                        "SELECT DISTINCT e FROM Entregador e " +
+                        "LEFT JOIN FETCH e.listaDeEntrega " +
                         "WHERE SIZE(e.listaDeEntrega) > :n",
                         Entregador.class
                 );

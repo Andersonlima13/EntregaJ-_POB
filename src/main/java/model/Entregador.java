@@ -1,26 +1,28 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+
 import jakarta.persistence.*;
 
 @Entity
-@Table(name="entregador20232370027")
+@Table(name = "entregador20232370027")
 public class Entregador {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    
+
     @Column(nullable = false, length = 100)
     private String nome;
-    
+
     @Lob
     @Column(name = "foto")
     private byte[] foto;
-    
+
+    // 🔴 List -> 🟢 Set (evita MultipleBagFetchException)
     @OneToMany(mappedBy = "entregador", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Entrega> listaDeEntrega = new ArrayList<>();
+    private Set<Entrega> listaDeEntrega = new HashSet<>();
 
     public Entregador() {
     }
@@ -53,12 +55,18 @@ public class Entregador {
         this.foto = foto;
     }
 
-    public List<Entrega> getListaDeEntrega() {
+    public Set<Entrega> getListaDeEntrega() {
         return listaDeEntrega;
     }
 
-    public void setListaDeEntrega(List<Entrega> listaDeEntrega) {
+    public void setListaDeEntrega(Set<Entrega> listaDeEntrega) {
         this.listaDeEntrega = listaDeEntrega;
+    }
+
+    // Método auxiliar (boa prática)
+    public void adicionarEntrega(Entrega e) {
+        listaDeEntrega.add(e);
+        e.setEntregador(this);
     }
 
     @Override

@@ -26,7 +26,12 @@ public class EntregadorRepositorio extends CRUDRepositorio<Entregador> {
     }
 
     public Entregador buscarPorNome(String nome) {
-        String jpql = "SELECT e FROM Entregador e WHERE e.nome = :nome";
+        String jpql =
+            "SELECT DISTINCT e FROM Entregador e " +
+            "LEFT JOIN FETCH e.listaDeEntrega l " +
+            "LEFT JOIN FETCH l.pedidos " +
+            "WHERE e.nome = :nome";
+
         TypedQuery<Entregador> query =
                 manager.createQuery(jpql, Entregador.class);
         query.setParameter("nome", nome);
