@@ -54,6 +54,11 @@ public class Fachada {
             // força inicialização
             for (Entregador e : lista) {
                 e.getListaDeEntrega().size();
+                if (e.getFoto() != null) {
+                    int len = e.getFoto().length;
+                    if (len < 0) {
+                    }
+                }
             }
 
             return lista;
@@ -69,6 +74,47 @@ public class Fachada {
         try {
             entregadorRep.setEntityManager(em);
             return entregadorRep.ler(nome);
+        } finally {
+            em.close();
+        }
+    }
+
+    public static Entregador localizarEntregadorPorId(int id) {
+        EntityManager em = Util.getEntityManager();
+        try {
+            entregadorRep.setEntityManager(em);
+            Entregador e = entregadorRep.ler(id);
+            if (e != null) {
+                if (e.getFoto() != null) {
+                    int len = e.getFoto().length;
+                }
+                if (e.getListaDeEntrega() != null) {
+                    e.getListaDeEntrega().size();
+                }
+            }
+            return e;
+        } finally {
+            em.close();
+        }
+    }
+
+    public static void atualizarFotoEntregador(int id, byte[] foto) throws Exception {
+        EntityManager em = Util.getEntityManager();
+        try {
+            em.getTransaction().begin();
+            entregadorRep.setEntityManager(em);
+
+            Entregador e = entregadorRep.ler(id);
+            if (e == null)
+                throw new Exception("Entregador inexistente: " + id);
+
+            e.setFoto(foto);
+            entregadorRep.atualizar(e);
+
+            em.getTransaction().commit();
+        } catch (Exception ex) {
+            em.getTransaction().rollback();
+            throw ex;
         } finally {
             em.close();
         }
@@ -222,14 +268,14 @@ public class Fachada {
             pedidoRep.setEntityManager(em);
             entregaRep.setEntityManager(em);
 
-            // 🔹 Reanexa o entregador
+            // Reanexa o entregador
             Entregador entregador = entregadorRep.ler(ent.getEntregador().getId());
             if (entregador == null)
                 throw new Exception("Entregador inexistente");
 
             ent.setEntregador(entregador);
 
-            // 🔹 Reanexa os pedidos
+            // Reanexa os pedidos
             List<Pedido> pedidosGerenciados = new ArrayList<>();
             for (Pedido p : ent.getPedidos()) {
                 Pedido pedidoGerenciado = pedidoRep.ler(p.getId());
@@ -245,7 +291,6 @@ public class Fachada {
                 ent.adicionarPedido(p);
             }
 
-            // 🔹 Agora tudo está MANAGED
             entregaRep.criar(ent);
 
             entregador.getListaDeEntrega().add(ent);

@@ -68,9 +68,9 @@ public class TelaPrincipal {
         ImagemLabel.setHorizontalAlignment(JLabel.CENTER);
         ImagemLabel.setBounds(0, 0, 500, 320);
 
-        // Carregar imagem logo.png
+        // Carregar imagem logo.jpg
         try {
-            java.io.File file = new java.io.File("src/main/java/imagens/logo.png");
+            java.io.File file = new java.io.File("src/main/java/fotos/logo.jpg");
             
             if (file.exists()) {
                 BufferedImage img = ImageIO.read(file);
