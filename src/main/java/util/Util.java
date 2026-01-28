@@ -3,18 +3,21 @@ package util;
 import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
 public class Util {
-
+    private static EntityManager manager;
     private static EntityManagerFactory factory;
     private static final Logger logger = LogManager.getLogger(Util.class);
 
-    private static void initFactory() {
-        if (factory == null) {
+    public static EntityManager conectar() {
+        if (manager == null) {
             try {
+                logger.info("----conectar banco");
+
                 Properties dados = new Properties();
                 dados.load(Util.class.getResourceAsStream("/util/util.properties"));
 
@@ -42,25 +45,26 @@ public class Util {
                     props.setProperty("jakarta.persistence.jdbc.password", senha);
                 }
 
-                String unitName = "hibernate-" + sgbd;
-                factory = Persistence.createEntityManagerFactory(unitName, props);
-
-                logger.info("EntityManagerFactory inicializada: " + unitName);
+                String unit = "hibernate-" + sgbd;
+                factory = Persistence.createEntityManagerFactory(unit, props);
+                manager = factory.createEntityManager();
 
             } catch (Exception e) {
-                throw new RuntimeException("Erro ao inicializar JPA", e);
+                throw new RuntimeException("Erro ao conectar no banco", e);
             }
         }
+        return manager;
     }
 
-    public static EntityManager getEntityManager() {
-        initFactory();
-        return factory.createEntityManager(); // 🔥 sempre NOVO
-    }
-
-    public static void closeFactory() {
-        if (factory != null && factory.isOpen()) {
+    public static void desconectar() {
+        if (manager != null && manager.isOpen()) {
+            manager.close();
             factory.close();
+            manager = null;
         }
+    }
+
+    public static EntityManager getManager() {
+        return manager;
     }
 }

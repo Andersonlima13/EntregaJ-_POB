@@ -149,9 +149,12 @@ public class TelaConsulta {
 
     // CONSULTA 2 (Set de Entregas)
     private void consultarPedidosPorEntregador(String nomeEntregador) {
-        Entregador ent = Fachada.localizarEntregadorPorNome(nomeEntregador);
-        if (ent == null) {
-            label.setText("Entregador não encontrado: " + nomeEntregador);
+        Entregador ent;
+
+        try {
+            ent = Fachada.localizarEntregadorPorNome(nomeEntregador);
+        } catch (Exception e) {
+            label.setText(e.getMessage());
             return;
         }
 
@@ -166,18 +169,17 @@ public class TelaConsulta {
         model.addColumn("Data Entrega");
 
         int total = 0;
-        Set<Entrega> entregas = ent.getListaDeEntrega();
 
-        for (Entrega e : entregas) {
-            for (Pedido p : e.getPedidos()) {
+        for (Entrega entrega : ent.getListaDeEntrega()) {
+            for (Pedido p : entrega.getPedidos()) {
                 total++;
                 model.addRow(new Object[]{
                         p.getId(),
                         p.getData(),
                         p.getValor(),
                         p.getDescricao(),
-                        e.getId(),
-                        e.getData()
+                        entrega.getId(),
+                        entrega.getData()
                 });
             }
         }

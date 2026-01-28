@@ -3,16 +3,16 @@ package requisito;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.EntityManager;
 import model.Entrega;
 import model.Entregador;
 import model.Pedido;
 import repositorio.EntregaRepositorio;
 import repositorio.EntregadorRepositorio;
 import repositorio.PedidoRepositorio;
-import util.Util;
 
 public class Fachada {
+
+    private Fachada() {}
 
     private static EntregadorRepositorio entregadorRep = new EntregadorRepositorio();
     private static EntregaRepositorio entregaRep = new EntregaRepositorio();
@@ -25,52 +25,113 @@ public class Fachada {
         if (nome == null || nome.isEmpty())
             throw new Exception("Nome vazio");
 
-        EntityManager em = Util.getEntityManager();
         try {
-            em.getTransaction().begin();
-            entregadorRep.setEntityManager(em);
+            entregadorRep.conectar();
+            entregadorRep.begin();
 
             Entregador existente = entregadorRep.ler(nome);
             if (existente != null)
                 throw new Exception("Entregador já existe: " + nome);
 
             entregadorRep.criar(new Entregador(nome));
+            entregadorRep.commit();
 
-            em.getTransaction().commit();
         } catch (Exception e) {
-            em.getTransaction().rollback();
+            entregadorRep.rollback();
             throw e;
         } finally {
-            em.close();
+            entregadorRep.desconectar();
         }
     }
 
     public static List<Entregador> listarEntregadores() {
-        EntityManager em = Util.getEntityManager();
         try {
-            entregadorRep.setEntityManager(em);
+            entregadorRep.conectar();
             List<Entregador> lista = entregadorRep.listar();
 
-            // força inicialização
             for (Entregador e : lista) {
+                // força lazy
                 e.getListaDeEntrega().size();
-            }
 
+                // força carga da foto
+                if (e.getFoto() != null) {
+                    int len = e.getFoto().length;
+                    if (len < 0) {}
+                }
+            }
             return lista;
+
         } finally {
-            em.close();
+            entregadorRep.desconectar();
         }
     }
-    
-    
-    
-    public static Entregador localizarEntregadorPorNome(String nome) {
-        EntityManager em = Util.getEntityManager();
+
+    public static Entregador localizarEntregadorPorNome(String nome) throws Exception {
         try {
-            entregadorRep.setEntityManager(em);
-            return entregadorRep.ler(nome);
+            entregadorRep.conectar();
+            Entregador e = entregadorRep.ler(nome);
+
+            if (e == null)
+                throw new Exception("Entregador inexistente: " + nome);
+
+            // lazy + foto
+            e.getListaDeEntrega().size();
+            if (e.getFoto() != null) {
+                int len = e.getFoto().length;
+                if (len < 0) {}
+            }
+
+            return e;
+
         } finally {
-            em.close();
+            entregadorRep.desconectar();
+        }
+    }
+
+    public static Entregador localizarEntregadorPorId(int id) throws Exception {
+        try {
+            entregadorRep.conectar();
+            Entregador e = entregadorRep.ler(id);
+
+            if (e == null)
+                throw new Exception("Entregador inexistente: " + id);
+
+            e.getListaDeEntrega().size();
+
+            if (e.getFoto() != null) {
+                int len = e.getFoto().length;
+                if (len < 0) {}
+            }
+
+            return e;
+
+        } finally {
+            entregadorRep.desconectar();
+        }
+    }
+
+    public static void atualizarFotoEntregador(int id, byte[] foto) throws Exception {
+        if (foto == null)
+            throw new Exception("Foto inválida");
+
+        try {
+            entregadorRep.conectar();
+            entregadorRep.begin();
+
+            Entregador e = entregadorRep.ler(id);
+            if (e == null)
+                throw new Exception("Entregador inexistente: " + id);
+
+            e.setFoto(foto);
+            entregadorRep.atualizar(e);
+
+            entregadorRep.commit();
+
+        } catch (Exception ex) {
+            entregadorRep.rollback();
+            throw ex;
+        } finally {
+            entregadorRep.desconectar();
         }
     }
 
@@ -78,10 +139,9 @@ public class Fachada {
         if (novoNome == null || novoNome.isEmpty())
             throw new Exception("Nome vazio");
 
-        EntityManager em = Util.getEntityManager();
         try {
-            em.getTransaction().begin();
-            entregadorRep.setEntityManager(em);
+            entregadorRep.conectar();
+            entregadorRep.begin();
 
             Entregador e = entregadorRep.ler(id);
             if (e == null)
@@ -93,37 +153,36 @@ public class Fachada {
 
             e.setNome(novoNome);
             entregadorRep.atualizar(e);
+            entregadorRep.commit();
 
-            em.getTransaction().commit();
         } catch (Exception ex) {
-            em.getTransaction().rollback();
+            entregadorRep.rollback();
             throw ex;
         } finally {
-            em.close();
+            entregadorRep.desconectar();
         }
     }
 
     public static void apagarEntregador(int id) throws Exception {
-        EntityManager em = Util.getEntityManager();
         try {
-            em.getTransaction().begin();
-            entregadorRep.setEntityManager(em);
+            entregadorRep.conectar();
+            entregadorRep.begin();
 
             Entregador e = entregadorRep.ler(id);
             if (e == null)
                 throw new Exception("Entregador inexistente: " + id);
 
-            if (e.getListaDeEntrega() != null && !e.getListaDeEntrega().isEmpty())
-                throw new Exception("Entregador possui entregas vinculadas.");
+            if (!e.getListaDeEntrega().isEmpty())
+                throw new Exception("Entregador possui entregas vinculadas");
 
             entregadorRep.apagar(e);
+            entregadorRep.commit();
 
-            em.getTransaction().commit();
         } catch (Exception ex) {
-            em.getTransaction().rollback();
+            entregadorRep.rollback();
             throw ex;
         } finally {
-            em.close();
+            entregadorRep.desconectar();
         }
     }
 
@@ -134,51 +193,51 @@ public class Fachada {
         if (p == null)
             throw new Exception("Pedido nulo");
 
-        EntityManager em = Util.getEntityManager();
         try {
-            em.getTransaction().begin();
-            pedidoRep.setEntityManager(em);
-
-            if (p.getId() != 0 && pedidoRep.ler(p.getId()) != null)
-                throw new Exception("Pedido já existe id:" + p.getId());
+            pedidoRep.conectar();
+            pedidoRep.begin();
 
             pedidoRep.criar(p);
+            pedidoRep.commit();
 
-            em.getTransaction().commit();
         } catch (Exception ex) {
-            em.getTransaction().rollback();
+            pedidoRep.rollback();
             throw ex;
         } finally {
-            em.close();
+            pedidoRep.desconectar();
         }
     }
 
     public static List<Pedido> listarPedidos() {
-        EntityManager em = Util.getEntityManager();
         try {
-            pedidoRep.setEntityManager(em);
+            pedidoRep.conectar();
             return pedidoRep.listar();
         } finally {
-            em.close();
+            pedidoRep.desconectar();
         }
     }
 
-    public static Pedido localizarPedidoPorId(int id) {
-        EntityManager em = Util.getEntityManager();
+    public static Pedido localizarPedidoPorId(int id) throws Exception {
         try {
-            pedidoRep.setEntityManager(em);
-            return pedidoRep.ler(id);
+            pedidoRep.conectar();
+            Pedido p = pedidoRep.ler(id);
+
+            if (p == null)
+                throw new Exception("Pedido inexistente: " + id);
+
+            return p;
+
         } finally {
-            em.close();
+            pedidoRep.desconectar();
         }
     }
 
     public static void apagarPedido(int id) throws Exception {
-        EntityManager em = Util.getEntityManager();
         try {
-            em.getTransaction().begin();
-            pedidoRep.setEntityManager(em);
-            entregaRep.setEntityManager(em);
+            pedidoRep.conectar();
+            entregaRep.conectar();
+
+            pedidoRep.begin();
 
             Pedido p = pedidoRep.ler(id);
             if (p == null)
@@ -191,19 +250,110 @@ public class Fachada {
             }
 
             pedidoRep.apagar(p);
+            pedidoRep.commit();
 
-            em.getTransaction().commit();
         } catch (Exception ex) {
-            em.getTransaction().rollback();
+            pedidoRep.rollback();
             throw ex;
         } finally {
-            em.close();
+            pedidoRep.desconectar();
+            entregaRep.desconectar();
         }
     }
+
 
     // =========================
     // ENTREGA
     // =========================
+    
+    
+    public static List<Entrega> listarEntregas() {
+        try {
+            entregaRep.conectar();
+            entregadorRep.conectar();
+
+            List<Entrega> lista = entregaRep.listar();
+
+            for (Entrega e : lista) {
+                // força lazy dos pedidos
+                e.getPedidos().size();
+
+                // força lazy do entregador
+                if (e.getEntregador() != null) {
+                    e.getEntregador().getNome();
+
+                    // força carga da foto do entregador (se existir)
+                    if (e.getEntregador().getFoto() != null) {
+                        int len = e.getEntregador().getFoto().length;
+                        if (len < 0) {}
+                    }
+                }
+            }
+
+            return lista;
+
+        } finally {
+            entregaRep.desconectar();
+            entregadorRep.desconectar();
+        }
+    }
+    
+    
+    public static void apagarEntrega(int id) throws Exception {
+        try {
+            entregaRep.conectar();
+            pedidoRep.conectar();
+            entregadorRep.conectar();
+
+            entregaRep.begin();
+
+            Entrega ent = entregaRep.ler(id);
+            if (ent == null)
+                throw new Exception("Entrega inexistente: " + id);
+
+            // desvincula pedidos
+            for (Pedido p : ent.getPedidos()) {
+                p.setEntrega(null);
+                pedidoRep.atualizar(p);
+            }
+            ent.getPedidos().clear();
+
+            // desvincula do entregador
+            Entregador e = ent.getEntregador();
+            if (e != null) {
+                e.getListaDeEntrega().removeIf(x -> x.getId() == id);
+                entregadorRep.atualizar(e);
+            }
+
+            entregaRep.apagar(ent);
+            entregaRep.commit();
+
+        } catch (Exception ex) {
+            entregaRep.rollback();
+            throw ex;
+        } finally {
+            entregaRep.desconectar();
+            pedidoRep.desconectar();
+            entregadorRep.desconectar();
+        }
+    }
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     public static void criarEntrega(Entrega ent) throws Exception {
         if (ent == null)
             throw new Exception("Entrega nula");
@@ -214,107 +364,44 @@ public class Fachada {
         if (ent.getPedidos().size() > 2)
             throw new Exception("Entrega não pode ter mais de dois pedidos");
 
-        EntityManager em = Util.getEntityManager();
         try {
-            em.getTransaction().begin();
+            entregadorRep.conectar();
+            pedidoRep.conectar();
+            entregaRep.conectar();
 
-            entregadorRep.setEntityManager(em);
-            pedidoRep.setEntityManager(em);
-            entregaRep.setEntityManager(em);
+            entregaRep.begin();
 
-            // 🔹 Reanexa o entregador
             Entregador entregador = entregadorRep.ler(ent.getEntregador().getId());
             if (entregador == null)
                 throw new Exception("Entregador inexistente");
 
             ent.setEntregador(entregador);
 
-            // 🔹 Reanexa os pedidos
             List<Pedido> pedidosGerenciados = new ArrayList<>();
             for (Pedido p : ent.getPedidos()) {
-                Pedido pedidoGerenciado = pedidoRep.ler(p.getId());
-                if (pedidoGerenciado == null)
+                Pedido pg = pedidoRep.ler(p.getId());
+                if (pg == null)
                     throw new Exception("Pedido inexistente id:" + p.getId());
-
-                pedidosGerenciados.add(pedidoGerenciado);
+                pedidosGerenciados.add(pg);
             }
 
-            // limpa e reconecta corretamente
             ent.getPedidos().clear();
             for (Pedido p : pedidosGerenciados) {
                 ent.adicionarPedido(p);
             }
 
-            // 🔹 Agora tudo está MANAGED
             entregaRep.criar(ent);
-
             entregador.getListaDeEntrega().add(ent);
 
-            em.getTransaction().commit();
+            entregaRep.commit();
+
         } catch (Exception ex) {
-            em.getTransaction().rollback();
+            entregaRep.rollback();
             throw ex;
         } finally {
-            em.close();
-        }
-    }
-    
-    
-    
-
-    public static List<Entrega> listarEntregas() {
-        EntityManager em = Util.getEntityManager();
-        try {
-            entregaRep.setEntityManager(em);
-            List<Entrega> lista = entregaRep.listar();
-
-            // 🔹 força inicialização dos pedidos
-            for (Entrega e : lista) {
-                e.getPedidos().size();
-            }
-
-            return lista;
-        } finally {
-            em.close();
-        }
-    }
-    
-    
-    
-    public static Entrega localizarEntregaPorId(int id) {
-        EntityManager em = Util.getEntityManager();
-        try {
-            entregaRep.setEntityManager(em);
-            return entregaRep.ler(id);
-        } finally {
-            em.close();
-        }
-    }
-
-    public static void apagarEntrega(int id) throws Exception {
-        EntityManager em = Util.getEntityManager();
-        try {
-            em.getTransaction().begin();
-
-            entregaRep.setEntityManager(em);
-            entregadorRep.setEntityManager(em);
-
-            Entrega e = entregaRep.ler(id);
-            if (e == null)
-                throw new Exception("Entrega inexistente: " + id);
-
-            Entregador ent = e.getEntregador();
-            if (ent != null)
-                ent.getListaDeEntrega().removeIf(x -> x.getId() == id);
-
-            entregaRep.apagar(e);
-
-            em.getTransaction().commit();
-        } catch (Exception ex) {
-            em.getTransaction().rollback();
-            throw ex;
-        } finally {
-            em.close();
+            entregadorRep.desconectar();
+            pedidoRep.desconectar();
+            entregaRep.desconectar();
         }
     }
 }
