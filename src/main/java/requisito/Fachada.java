@@ -50,7 +50,7 @@ public class Fachada {
             List<Entregador> lista = entregadorRep.listar();
 
             for (Entregador e : lista) {
-                // força lazy
+                // força lazy das entregas
                 e.getListaDeEntrega().size();
 
                 // força carga da foto
@@ -74,8 +74,8 @@ public class Fachada {
             if (e == null)
                 throw new Exception("Entregador inexistente: " + nome);
 
-            // lazy + foto
             e.getListaDeEntrega().size();
+
             if (e.getFoto() != null) {
                 int len = e.getFoto().length;
                 if (len < 0) {}
@@ -261,99 +261,9 @@ public class Fachada {
         }
     }
 
-
     // =========================
     // ENTREGA
     // =========================
-    
-    
-    public static List<Entrega> listarEntregas() {
-        try {
-            entregaRep.conectar();
-            entregadorRep.conectar();
-
-            List<Entrega> lista = entregaRep.listar();
-
-            for (Entrega e : lista) {
-                // força lazy dos pedidos
-                e.getPedidos().size();
-
-                // força lazy do entregador
-                if (e.getEntregador() != null) {
-                    e.getEntregador().getNome();
-
-                    // força carga da foto do entregador (se existir)
-                    if (e.getEntregador().getFoto() != null) {
-                        int len = e.getEntregador().getFoto().length;
-                        if (len < 0) {}
-                    }
-                }
-            }
-
-            return lista;
-
-        } finally {
-            entregaRep.desconectar();
-            entregadorRep.desconectar();
-        }
-    }
-    
-    
-    public static void apagarEntrega(int id) throws Exception {
-        try {
-            entregaRep.conectar();
-            pedidoRep.conectar();
-            entregadorRep.conectar();
-
-            entregaRep.begin();
-
-            Entrega ent = entregaRep.ler(id);
-            if (ent == null)
-                throw new Exception("Entrega inexistente: " + id);
-
-            // desvincula pedidos
-            for (Pedido p : ent.getPedidos()) {
-                p.setEntrega(null);
-                pedidoRep.atualizar(p);
-            }
-            ent.getPedidos().clear();
-
-            // desvincula do entregador
-            Entregador e = ent.getEntregador();
-            if (e != null) {
-                e.getListaDeEntrega().removeIf(x -> x.getId() == id);
-                entregadorRep.atualizar(e);
-            }
-
-            entregaRep.apagar(ent);
-            entregaRep.commit();
-
-        } catch (Exception ex) {
-            entregaRep.rollback();
-            throw ex;
-        } finally {
-            entregaRep.desconectar();
-            pedidoRep.desconectar();
-            entregadorRep.desconectar();
-        }
-    }
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     public static void criarEntrega(Entrega ent) throws Exception {
         if (ent == null)
             throw new Exception("Entrega nula");
@@ -381,7 +291,7 @@ public class Fachada {
             for (Pedido p : ent.getPedidos()) {
                 Pedido pg = pedidoRep.ler(p.getId());
                 if (pg == null)
-                    throw new Exception("Pedido inexistente id:" + p.getId());
+                    throw new Exception("Pedido inexistente id: " + p.getId());
                 pedidosGerenciados.add(pg);
             }
 
@@ -402,6 +312,71 @@ public class Fachada {
             entregadorRep.desconectar();
             pedidoRep.desconectar();
             entregaRep.desconectar();
+        }
+    }
+
+    public static List<Entrega> listarEntregas() {
+        try {
+            entregaRep.conectar();
+            entregadorRep.conectar();
+
+            List<Entrega> lista = entregaRep.listar();
+
+            for (Entrega e : lista) {
+                e.getPedidos().size();
+
+                if (e.getEntregador() != null) {
+                    e.getEntregador().getNome();
+
+                    if (e.getEntregador().getFoto() != null) {
+                        int len = e.getEntregador().getFoto().length;
+                        if (len < 0) {}
+                    }
+                }
+            }
+
+            return lista;
+
+        } finally {
+            entregaRep.desconectar();
+            entregadorRep.desconectar();
+        }
+    }
+
+    public static void apagarEntrega(int id) throws Exception {
+        try {
+            entregaRep.conectar();
+            pedidoRep.conectar();
+            entregadorRep.conectar();
+
+            entregaRep.begin();
+
+            Entrega ent = entregaRep.ler(id);
+            if (ent == null)
+                throw new Exception("Entrega inexistente: " + id);
+
+            for (Pedido p : ent.getPedidos()) {
+                p.setEntrega(null);
+                pedidoRep.atualizar(p);
+            }
+            ent.getPedidos().clear();
+
+            Entregador e = ent.getEntregador();
+            if (e != null) {
+                e.getListaDeEntrega().removeIf(x -> x.getId() == id);
+                entregadorRep.atualizar(e);
+            }
+
+            entregaRep.apagar(ent);
+            entregaRep.commit();
+
+        } catch (Exception ex) {
+            entregaRep.rollback();
+            throw ex;
+        } finally {
+            entregaRep.desconectar();
+            pedidoRep.desconectar();
+            entregadorRep.desconectar();
         }
     }
 }
