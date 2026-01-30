@@ -3,8 +3,6 @@ package appswing;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.SystemColor;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -26,12 +24,13 @@ import model.Pedido;
 import requisito.Fachada;
 
 public class TelaPedido {
+
     private JDialog frame;
     private JTable table;
     private JScrollPane scrollPane;
     private JButton btnCriar;
     private JButton btnLimpar;
-    private JTextField textFieldId;
+    private JButton btnApagar;
     private JTextField textFieldData;
     private JTextField textFieldValor;
     private JTextField textFieldDescricao;
@@ -53,6 +52,7 @@ public class TelaPedido {
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.getContentPane().setLayout(null);
+
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
@@ -65,43 +65,30 @@ public class TelaPedido {
         frame.getContentPane().add(scrollPane);
 
         table = new JTable();
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setShowGrid(true);
+        table.setGridColor(Color.BLACK);
+        table.setFont(new Font("Tahoma", Font.PLAIN, 14));
+        table.setFocusable(false);
+        table.setBorder(new LineBorder(Color.BLACK));
+
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 label.setText("");
-                if (table.getSelectedRow() >= 0) {
-                    Integer id = (Integer) table.getValueAt(table.getSelectedRow(), 0);
-                    String data = (String) table.getValueAt(table.getSelectedRow(), 1);
-                    Double valor = (Double) table.getValueAt(table.getSelectedRow(), 2);
-                    String descricao = (String) table.getValueAt(table.getSelectedRow(), 3);
-                    
-                    textFieldId.setText(id.toString());
-                    textFieldData.setText(data);
-                    textFieldValor.setText(valor.toString());
-                    textFieldDescricao.setText(descricao);
+                int row = table.getSelectedRow();
+                if (row >= 0) {
+                    textFieldData.setText(table.getValueAt(row, 1).toString());
+                    textFieldValor.setText(table.getValueAt(row, 2).toString());
+                    textFieldDescricao.setText(table.getValueAt(row, 3).toString());
+
+                    Integer id = (Integer) table.getValueAt(row, 0);
                     labelInfo.setText("Pedido selecionado: #" + id);
                 }
             }
         });
-        table.setGridColor(Color.BLACK);
-        table.setRequestFocusEnabled(false);
-        table.setFocusable(false);
-        table.setBackground(Color.WHITE);
-        table.setFillsViewportHeight(true);
-        table.setRowSelectionAllowed(true);
-        table.setFont(new Font("Tahoma", Font.PLAIN, 14));
-        scrollPane.setViewportView(table);
-        table.setBorder(new LineBorder(new Color(0, 0, 0)));
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.setShowGrid(true);
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-       
-/**
-        textFieldId = new JTextField();
-        textFieldId.setEditable(false);
-        textFieldId.setBounds(60, 250, 50, 20);
-        frame.getContentPane().add(textFieldId);**/
+        scrollPane.setViewportView(table);
 
         JLabel lblData = new JLabel("Data:");
         lblData.setFont(new Font("Tahoma", Font.BOLD, 12));
@@ -130,50 +117,73 @@ public class TelaPedido {
         textFieldDescricao.setBounds(110, 285, 320, 20);
         frame.getContentPane().add(textFieldDescricao);
 
+        // ===== BOTÃO CRIAR =====
         btnCriar = new JButton("Criar Pedido");
-        btnCriar.setBackground(SystemColor.control);
-        btnCriar.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    label.setText("");
-                    if (textFieldData.getText().isEmpty() || 
-                        textFieldValor.getText().isEmpty() ||
-                        textFieldDescricao.getText().isEmpty())
-                        throw new Exception("Preencha todos os campos!");
+        btnCriar.setBounds(26, 325, 130, 25);
+        btnCriar.addActionListener(e -> {
+            try {
+                label.setText("");
 
-                    Pedido p = new Pedido();
-                    p.setData(textFieldData.getText());
-                    p.setValor(Double.parseDouble(textFieldValor.getText()));
-                    p.setDescricao(textFieldDescricao.getText());
-
-                    Fachada.criarPedido(p);
-
-                    label.setText("Pedido criado com sucesso!");
-                    listagem();
-                    btnLimpar.doClick();
-
-                } catch (NumberFormatException ex) {
-                    label.setText("Valor inválido!");
-                } catch (Exception ex) {
-                    label.setText(ex.getMessage());
+                if (textFieldData.getText().isEmpty()
+                        || textFieldValor.getText().isEmpty()
+                        || textFieldDescricao.getText().isEmpty()) {
+                    throw new Exception("Preencha todos os campos!");
                 }
+
+                Pedido p = new Pedido();
+                p.setData(textFieldData.getText());
+                p.setValor(Double.parseDouble(textFieldValor.getText()));
+                p.setDescricao(textFieldDescricao.getText());
+
+                Fachada.criarPedido(p);
+
+                label.setText("Pedido criado com sucesso!");
+                listagem();
+                btnLimpar.doClick();
+
+            } catch (NumberFormatException ex) {
+                label.setText("Valor inválido!");
+            } catch (Exception ex) {
+                label.setText(ex.getMessage());
             }
         });
-        btnCriar.setBounds(26, 325, 130, 25);
         frame.getContentPane().add(btnCriar);
 
-        btnLimpar = new JButton("Limpar");
-        btnLimpar.setBackground(SystemColor.control);
-        btnLimpar.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                textFieldId.setText("");
-                textFieldData.setText("");
-                textFieldValor.setText("");
-                textFieldDescricao.setText("");
-                labelInfo.setText("Selecione um pedido");
+        // ===== BOTÃO APAGAR =====
+        btnApagar = new JButton("Apagar Pedido");
+        btnApagar.setBounds(170, 325, 130, 25);
+        btnApagar.addActionListener(e -> {
+            try {
+                label.setText("");
+
+                int row = table.getSelectedRow();
+                if (row < 0)
+                    throw new Exception("Selecione um pedido para apagar!");
+
+                int id = (Integer) table.getValueAt(row, 0);
+
+                Fachada.apagarPedido(id);
+
+                label.setText("Pedido apagado com sucesso!");
+                listagem();
+                btnLimpar.doClick();
+
+            } catch (Exception ex) {
+                label.setText(ex.getMessage());
             }
         });
-        btnLimpar.setBounds(170, 325, 100, 25);
+        frame.getContentPane().add(btnApagar);
+
+        // ===== BOTÃO LIMPAR =====
+        btnLimpar = new JButton("Limpar");
+        btnLimpar.setBounds(310, 325, 100, 25);
+        btnLimpar.addActionListener(e -> {
+            textFieldData.setText("");
+            textFieldValor.setText("");
+            textFieldDescricao.setText("");
+            labelInfo.setText("Selecione um pedido");
+            table.clearSelection();
+        });
         frame.getContentPane().add(btnLimpar);
 
         labelInfo = new JLabel("Selecione um pedido");
@@ -191,28 +201,27 @@ public class TelaPedido {
             List<Pedido> lista = Fachada.listarPedidos();
 
             DefaultTableModel model = new DefaultTableModel();
-            table.setModel(model);
-
-            // Colunas
             model.addColumn("ID");
             model.addColumn("Data");
             model.addColumn("Valor");
             model.addColumn("Descrição");
             model.addColumn("Status Entrega");
 
-            // Linhas
             for (Pedido p : lista) {
-                String status = p.getEntrega() != null ? 
-                    "Entrega #" + p.getEntrega().getId() : "Sem entrega";
-                model.addRow(new Object[] {
-                    p.getId(),
-                    p.getData(),
-                    p.getValor(),
-                    p.getDescricao(),
-                    status
+                String status = (p.getEntrega() != null)
+                        ? "Entrega #" + p.getEntrega().getId()
+                        : "Sem entrega";
+
+                model.addRow(new Object[]{
+                        p.getId(),
+                        p.getData(),
+                        p.getValor(),
+                        p.getDescricao(),
+                        status
                 });
             }
 
+            table.setModel(model);
             labelInfo.setText("Resultados: " + lista.size() + " pedido(s)");
 
         } catch (Exception ex) {

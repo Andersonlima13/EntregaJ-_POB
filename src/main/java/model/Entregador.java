@@ -20,7 +20,7 @@ public class Entregador {
     @Column(name = "foto")
     private byte[] foto;
 
-    // 🔴 List -> 🟢 Set (evita MultipleBagFetchException)
+    
     @OneToMany(mappedBy = "entregador", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Entrega> listaDeEntrega = new HashSet<>();
 
